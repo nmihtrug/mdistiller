@@ -29,9 +29,6 @@ class BaseTrainer(object):
         self.optimizer = self.init_optimizer(cfg)
         self.best_acc = -1
 
-        if self.cfg.LOG.WANDB:
-            wandb.init(project="mdistiller", name=experiment_name)
-
         username = getpass.getuser()
         # init loggers
         self.log_path = os.path.join(cfg.LOG.PREFIX, experiment_name)

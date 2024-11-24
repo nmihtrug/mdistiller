@@ -18,12 +18,14 @@ from mdistiller.engine import trainer_dict
 def main(cfg, resume, opts):
     experiment_name = cfg.EXPERIMENT.NAME
     if experiment_name == "":
-        experiment_name = cfg.EXPERIMENT.TAG
+        experiment_name = cfg.DISTILLER.TYPE + "_" + cfg.DISTILLER.TEACHER + "_" + cfg.DISTILLER.STUDENT
+        # experiment_name = cfg.EXPERIMENT.TAG
     tags = cfg.EXPERIMENT.TAG.split(",")
     if opts:
-        addtional_tags = ["{}:{}".format(k, v) for k, v in zip(opts[::2], opts[1::2])]
+        experiment_name += "_"
+        addtional_tags = ["{}:{}".format(k, v) for k, v in zip(opts[::2], opts[1::2]) if not k.startswith("DISTILLER")]
         tags += addtional_tags
-        experiment_name += ",".join(addtional_tags)
+        experiment_name += "_".join(addtional_tags)
     experiment_name = os.path.join(cfg.EXPERIMENT.PROJECT, experiment_name)
     if cfg.LOG.WANDB:
         try:
