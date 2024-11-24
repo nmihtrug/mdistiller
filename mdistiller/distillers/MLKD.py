@@ -75,9 +75,9 @@ def mixup_data_conf(x, y, lam, use_cuda=True):
     return mixed_x, y_a, y_b, lam
 
 
-class KD_ours(Distiller):
+class MLKD(Distiller):
     def __init__(self, student, teacher, cfg):
-        super(KD_ours, self).__init__(student, teacher)
+        super(MLKD, self).__init__(student, teacher)
         self.temperature = cfg.KD.TEMPERATURE
         self.ce_loss_weight = cfg.KD.LOSS.CE_WEIGHT
         self.kd_loss_weight = cfg.KD.LOSS.KD_WEIGHT
