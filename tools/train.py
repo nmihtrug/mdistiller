@@ -18,7 +18,10 @@ from mdistiller.engine import trainer_dict
 def main(cfg, resume, opts):
     experiment_name = cfg.EXPERIMENT.NAME
     if experiment_name == "":
-        experiment_name = cfg.DISTILLER.TYPE + "_" + cfg.DISTILLER.TEACHER + "_" + cfg.DISTILLER.STUDENT
+        if cfg.DISTILLER.TYPE == "NONE":
+            experiment_name = "vanilla_" + cfg.DISTILLER.STUDENT
+        else:
+            experiment_name = cfg.DISTILLER.TYPE + "_" + cfg.DISTILLER.TEACHER + "_" + cfg.DISTILLER.STUDENT
         # experiment_name = cfg.EXPERIMENT.TAG
     tags = cfg.EXPERIMENT.TAG.split(",")
     if opts:

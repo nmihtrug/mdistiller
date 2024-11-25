@@ -13,6 +13,7 @@ from .VID import VID
 from .ReviewKD import ReviewKD
 from .DKD import DKD
 from .MLKD import MLKD
+from .NKD import NKD
 
 distiller_dict = {
     "NONE": Vanilla,
@@ -30,4 +31,5 @@ distiller_dict = {
     "REVIEWKD": ReviewKD,
     "DKD": DKD,
     "MLKD": MLKD,
+    "NKD": NKD,
 }
