@@ -14,6 +14,7 @@ from .ReviewKD import ReviewKD
 from .DKD import DKD
 from .MLKD import MLKD
 from .NKD import NKD
+from .KD_CE import KD_CE
 
 distiller_dict = {
     "NONE": Vanilla,
@@ -32,4 +33,5 @@ distiller_dict = {
     "DKD": DKD,
     "MLKD": MLKD,
     "NKD": NKD,
+    "KD_CE": KD_CE,
 }
