@@ -46,3 +46,5 @@ if __name__ == "__main__":
     model = model.cuda()
     model = torch.nn.DataParallel(model)
     test_acc, test_acc_top5, test_loss = validate(val_loader, model)
+    
+    print("Top-1 Acc: {:.3f}, Top-5 Acc: {:.3f}".format(test_acc, test_acc_top5))
