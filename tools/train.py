@@ -8,7 +8,7 @@ cudnn.benchmark = True
 
 from mdistiller.models import cifar_model_dict, imagenet_model_dict, tiny_imagenet_model_dict
 from mdistiller.distillers import distiller_dict
-from mdistiller.dataset import get_dataset
+from mdistiller.dataset import get_dataset, get_dataset_strong
 from mdistiller.engine.utils import load_checkpoint, log_msg
 from mdistiller.engine.cfg import CFG as cfg
 from mdistiller.engine.cfg import show_cfg
@@ -42,7 +42,10 @@ def main(cfg, resume, opts):
     # cfg & loggers
     show_cfg(cfg)
     # init dataloader & models
-    train_loader, val_loader, num_data, num_classes = get_dataset(cfg)
+    if cfg.SOLVER.TRAINER == "aug":
+        train_loader, val_loader, num_data, num_classes = get_dataset_strong(cfg)
+    else:
+        train_loader, val_loader, num_data, num_classes = get_dataset(cfg)
 
     # vanilla
     if cfg.DISTILLER.TYPE == "NONE":
