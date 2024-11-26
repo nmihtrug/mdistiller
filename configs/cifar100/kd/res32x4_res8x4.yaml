@@ -1,11 +1,11 @@
 EXPERIMENT:
   NAME: ""
-  TAG: "kd,dot,vgg13,vgg8"
-  PROJECT: "dot_cifar"
+  TAG: "kd,res32x4,res8x4"
+  PROJECT: "cifar100_baselines"
 DISTILLER:
   TYPE: "KD"
-  TEACHER: "vgg13"
-  STUDENT: "vgg8"
+  TEACHER: "resnet32x4"
+  STUDENT: "resnet8x4"
 SOLVER:
   BATCH_SIZE: 64
   EPOCHS: 240
@@ -15,6 +15,4 @@ SOLVER:
   WEIGHT_DECAY: 0.0005
   MOMENTUM: 0.9
   TYPE: "SGD"
-  TRAINER: "dot"
-  DOT:
-    DELTA: 0.075
+
