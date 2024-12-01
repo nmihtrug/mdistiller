@@ -15,6 +15,8 @@ from .DKD import DKD
 from .MLKD import MLKD
 from .NKD import NKD
 from .KD_CE import KD_CE
+from .GDKD import GDKD
+
 
 distiller_dict = {
     "NONE": Vanilla,
@@ -34,4 +36,5 @@ distiller_dict = {
     "MLKD": MLKD,
     "NKD": NKD,
     "KD_CE": KD_CE,
+    "GDKD": GDKD,
 }
