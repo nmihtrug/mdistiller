@@ -16,20 +16,22 @@ from mdistiller.engine import trainer_dict
 
 
 def main(cfg, resume, opts):
+    experiment_project = cfg.EXPERIMENT.PROJECT + "_" + cfg.DISTILLER.TYPE
+    
     experiment_name = cfg.EXPERIMENT.NAME
     if experiment_name == "":
         if cfg.DISTILLER.TYPE == "NONE":
             experiment_name = "vanilla_" + cfg.DISTILLER.STUDENT
         else:
-            experiment_name = cfg.DISTILLER.TYPE + "_" + cfg.DISTILLER.TEACHER + "_" + cfg.DISTILLER.STUDENT
-        # experiment_name = cfg.EXPERIMENT.TAG
+            experiment_name = cfg.DISTILLER.TEACHER + "_" + cfg.DISTILLER.STUDENT
+    
     tags = cfg.EXPERIMENT.TAG.split(",")
     if opts:
         experiment_name += "_"
         addtional_tags = ["{}:{}".format(k, v) for k, v in zip(opts[::2], opts[1::2]) if not k.startswith("DISTILLER")]
         tags += addtional_tags
         experiment_name += "_".join(addtional_tags)
-    experiment_name = os.path.join(cfg.EXPERIMENT.PROJECT, experiment_name)
+    experiment_name = os.path.join(experiment_project, experiment_name)
     if cfg.LOG.WANDB:
         try:
             import wandb
@@ -97,7 +99,7 @@ def main(cfg, resume, opts):
 
     # train
     trainer = trainer_dict[cfg.SOLVER.TRAINER](
-        experiment_name, distiller, train_loader, val_loader, cfg
+        experiment_name, distiller, train_loader, val_loader, num_classes, cfg
     )
     trainer.train(resume=resume)
 

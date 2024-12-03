@@ -21,11 +21,12 @@ from .dot import DistillationOrientedTrainer
 import wandb
 
 class BaseTrainer(object):
-    def __init__(self, experiment_name, distiller, train_loader, val_loader, cfg):
+    def __init__(self, experiment_name, distiller, train_loader, val_loader, num_classes, cfg):
         self.cfg = cfg
         self.distiller = distiller
         self.train_loader = train_loader
         self.val_loader = val_loader
+        self.num_classes = num_classes
         self.optimizer = self.init_optimizer(cfg)
         self.best_acc = -1
 
@@ -92,13 +93,25 @@ class BaseTrainer(object):
 
     def train_epoch(self, epoch):
         lr = adjust_learning_rate(epoch, self.cfg, self.optimizer)
-        train_meters = {
-            "training_time": AverageMeter(),
-            "data_time": AverageMeter(),
-            "losses": AverageMeter(),
-            "top1": AverageMeter(),
-            "top5": AverageMeter(),
-        }
+        
+        if self.cfg.DISTILLER.TYPE == "DKD":
+            train_meters = {
+                "training_time": AverageMeter(),
+                "data_time": AverageMeter(),
+                "losses": AverageMeter(),
+                "loss_tckd": AverageMeter(),
+                "loss_nckd": AverageMeter(),
+                "top1": AverageMeter(),
+                "top5": AverageMeter(),
+            }
+        else:
+            train_meters = {
+                "training_time": AverageMeter(),
+                "data_time": AverageMeter(),
+                "losses": AverageMeter(),
+                "top1": AverageMeter(),
+                "top5": AverageMeter(),
+            }
         num_iter = len(self.train_loader)
         pbar = tqdm(range(num_iter))
 
@@ -114,17 +127,32 @@ class BaseTrainer(object):
         test_acc_top1, test_acc_top5, test_loss = validate(self.val_loader, self.distiller)
 
         # log
-        log_dict = OrderedDict(
-            {
-                "current_lr": lr,
-                "train_loss": train_meters["losses"].avg,
-                "train_acc_top1": train_meters["top1"].avg,
-                "train_acc_top5": train_meters["top5"].avg,
-                "test_loss": test_loss,
-                "test_acc_top1": test_acc_top1,
-                "test_acc_top5": test_acc_top5,
-            }
-        )
+        if self.cfg.DISTILLER.TYPE == "DKD":
+            log_dict = OrderedDict(
+                {
+                    "current_lr": lr,
+                    "train_loss": train_meters["losses"].avg,
+                    "train_acc_top1": train_meters["top1"].avg,
+                    "train_acc_top5": train_meters["top5"].avg,
+                    "train_loss_tckd": train_meters["loss_tckd"].avg,
+                    "train_loss_nckd": train_meters["loss_nckd"].avg,
+                    "test_loss": test_loss,
+                    "test_acc_top1": test_acc_top1,
+                    "test_acc_top5": test_acc_top5,
+                }
+            )
+        else:
+            log_dict = OrderedDict(
+                {
+                    "current_lr": lr,
+                    "train_loss": train_meters["losses"].avg,
+                    "train_acc_top1": train_meters["top1"].avg,
+                    "train_acc_top5": train_meters["top5"].avg,
+                    "test_loss": test_loss,
+                    "test_acc_top1": test_acc_top1,
+                    "test_acc_top5": test_acc_top5,
+                }
+            )
         self.log(lr, epoch, log_dict)
         # saving checkpoint
         state = {
@@ -163,16 +191,21 @@ class BaseTrainer(object):
         target = target.cuda(non_blocking=True)
         index = index.cuda(non_blocking=True)
 
+        batch_size = image.size(0)
         # forward
-        preds, losses_dict = self.distiller(image=image, target=target, epoch=epoch)
-
+        if self.cfg.DISTILLER.TYPE == "DKD":
+            preds, losses_dict, loss_tckd, loss_nckd = self.distiller(image=image, target=target, epoch=epoch)
+            train_meters["loss_tckd"].update(loss_tckd.cpu().detach().numpy().mean(), batch_size)
+            train_meters["loss_nckd"].update(loss_nckd.cpu().detach().numpy().mean(), batch_size)
+        else:
+            preds, losses_dict = self.distiller(image=image, target=target, epoch=epoch, num_classes=self.num_classes)
+            
         # backward
         loss = sum([l.mean() for l in losses_dict.values()])
         loss.backward()
         self.optimizer.step()
         train_meters["training_time"].update(time.time() - train_start_time)
         # collect info
-        batch_size = image.size(0)
         acc1, acc5 = accuracy(preds, target, topk=(1, 5))
         train_meters["losses"].update(loss.cpu().detach().numpy().mean(), batch_size)
         train_meters["top1"].update(acc1[0], batch_size)

@@ -16,6 +16,7 @@ from .MLKD import MLKD
 from .NKD import NKD
 from .KD_CE import KD_CE
 from .GDKD import GDKD
+from .WSLD import WSLD
 
 
 distiller_dict = {
@@ -37,4 +38,5 @@ distiller_dict = {
     "NKD": NKD,
     "KD_CE": KD_CE,
     "GDKD": GDKD,
+    "WSLD": WSLD,
 }

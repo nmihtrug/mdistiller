@@ -32,6 +32,8 @@ def validate(val_loader, distiller):
     num_iter = len(val_loader)
     pbar = tqdm(range(num_iter))
 
+
+    b_list = []
     distiller.eval()
     with torch.no_grad():
         start_time = time.time()
@@ -39,7 +41,22 @@ def validate(val_loader, distiller):
             image = image.float()
             image = image.cuda(non_blocking=True)
             target = target.cuda(non_blocking=True)
+            
+            
             output = distiller(image=image)
+            
+            
+            # target_logits = output[torch.arange(output.size(0)), target]
+
+            # Mask to exclude target logits
+            # mask = torch.ones_like(output, dtype=bool)
+            # mask[torch.arange(output.size(0)), target] = False
+
+            # # Get the maximum of non-target logits
+            # non_target_max_logits = output.masked_fill(~mask, float('-inf')).max(dim=1).values
+
+            # b_list.extend(target_logits.detach().cpu().numpy() - non_target_max_logits.detach().cpu().numpy())
+
             loss = criterion(output, target)
             acc1, acc5 = accuracy(output, target, topk=(1, 5))
             batch_size = image.size(0)
@@ -56,6 +73,8 @@ def validate(val_loader, distiller):
             pbar.set_description(log_msg(msg, "EVAL"))
             pbar.update()
     pbar.close()
+    
+    # print("B: ", np.mean(b_list), np.max(b_list), np.min(b_list), len(b_list))
     return top1.avg, top5.avg, losses.avg
 
 
