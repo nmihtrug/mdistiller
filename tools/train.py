@@ -36,7 +36,7 @@ def main(cfg, resume, opts):
         try:
             import wandb
 
-            wandb.init(project=cfg.EXPERIMENT.PROJECT, name=experiment_name, tags=tags)
+            wandb.init(project=experiment_project, name=experiment_name, tags=tags)
         except:
             print(log_msg("Failed to use WANDB", "INFO"))
             cfg.LOG.WANDB = False
