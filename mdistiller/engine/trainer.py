@@ -128,7 +128,7 @@ class BaseTrainer(object):
                 "test_acc_top5": test_acc_top5,
             }
         )
-        self.log(lr, epoch, log_dict)
+        self.log(epoch, log_dict)
         # saving checkpoint
         state = {
             "epoch": epoch,
