@@ -29,7 +29,7 @@ def dkd_loss(logits_student, logits_teacher, target, alpha, beta, temperature):
         * (temperature**2)
         / target.shape[0]
     )
-    return alpha * tckd_loss + beta * nckd_loss
+    return alpha * tckd_loss, beta * nckd_loss, alpha * tckd_loss + beta * nckd_loss
 
 
 def _get_gt_mask(logits, target):
@@ -69,7 +69,7 @@ class DKD(Distiller):
 
         # losses
         loss_ce = self.ce_loss_weight * F.cross_entropy(logits_student, target)
-        loss_dkd = min(kwargs["epoch"] / self.warmup, 1.0) * dkd_loss(
+        self.loss_tckd, self.loss_nckd, loss_dkd = dkd_loss(
             logits_student,
             logits_teacher,
             target,
@@ -77,8 +77,17 @@ class DKD(Distiller):
             self.beta,
             self.temperature,
         )
+        
+        loss_dkd *= min(kwargs["epoch"] / self.warmup, 1.0) 
+        
         losses_dict = {
             "loss_ce": loss_ce,
             "loss_kd": loss_dkd,
         }
         return logits_student, losses_dict
+    
+    def get_losses_info(self):
+        return {
+            "loss_tckd": self.loss_tckd,
+            "loss_nckd": self.loss_nckd,
+        }

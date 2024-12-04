@@ -78,6 +78,59 @@ def validate(val_loader, distiller):
     return top1.avg, top5.avg, losses.avg
 
 
+def experiment(data_loader, model_s, model_t):
+    batch_time, losses, top1, top5 = [AverageMeter() for _ in range(4)]
+    criterion = nn.CrossEntropyLoss()
+    num_iter = len(data_loader)
+    pbar = tqdm(range(num_iter))
+
+
+    b_list = []
+    model_s.eval()
+    model_t.eval()
+    with torch.no_grad():
+        start_time = time.time()
+        for idx, (image, target) in enumerate(data_loader):
+            image = image.float()
+            image = image.cuda(non_blocking=True)
+            target = target.cuda(non_blocking=True)
+            
+            
+            output_s = model_s(image=image)
+            output_t = model_t(image=image)
+            
+            
+            # target_logits = output[torch.arange(output.size(0)), target]
+
+            # Mask to exclude target logits
+            # mask = torch.ones_like(output, dtype=bool)
+            # mask[torch.arange(output.size(0)), target] = False
+
+            # # Get the maximum of non-target logits
+            # non_target_max_logits = output.masked_fill(~mask, float('-inf')).max(dim=1).values
+
+            # b_list.extend(target_logits.detach().cpu().numpy() - non_target_max_logits.detach().cpu().numpy())
+
+            loss = criterion(output_s, target)
+            acc1, acc5 = accuracy(output_s, target, topk=(1, 5))
+            batch_size = image.size(0)
+            losses.update(loss.cpu().detach().numpy().mean(), batch_size)
+            top1.update(acc1[0], batch_size)
+            top5.update(acc5[0], batch_size)
+
+            # measure elapsed time
+            batch_time.update(time.time() - start_time)
+            start_time = time.time()
+            msg = "Top-1:{top1.avg:.3f}| Top-5:{top5.avg:.3f}".format(
+                top1=top1, top5=top5
+            )
+            pbar.set_description(log_msg(msg, "EXPERIMENT"))
+            pbar.update()
+    pbar.close()
+    
+    # print("B: ", np.mean(b_list), np.max(b_list), np.min(b_list), len(b_list))
+    return top1.avg, top5.avg, losses.avg
+
 def log_msg(msg, mode="INFO"):
     color_map = {
         "INFO": 36,
