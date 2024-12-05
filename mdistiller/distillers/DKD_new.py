@@ -34,7 +34,7 @@ def dkd_loss_with_wsld(logits_student, logits_teacher, target, alpha, beta, temp
         / target.shape[0]
     )
     
-    tckd_loss *= wsld_weight
+    tckd_loss *= (1 - wsld_weight)
     
     pred_teacher_part2 = F.softmax(
         logits_teacher / temperature - 1000.0 * gt_mask, dim=1
@@ -48,7 +48,7 @@ def dkd_loss_with_wsld(logits_student, logits_teacher, target, alpha, beta, temp
         / target.shape[0]
     )
     
-    nckd_loss *= (1 - wsld_weight)
+    nckd_loss *= wsld_weight
     
     dkd_loss = alpha * tckd_loss + beta * nckd_loss
     
