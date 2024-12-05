@@ -65,8 +65,6 @@ class BaseTrainer(object):
             self.run_ok = True
             if self.cfg.LOG.WANDB:
                 try:
-                    import wandb
-
                     wandb.init(project=self.experiment_project, name=self.experiment_name, tags=self.tags)
                 except:
                     print(log_msg("Failed to use WANDB", "INFO"))
