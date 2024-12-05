@@ -18,6 +18,7 @@ from .KD_CE import KD_CE
 from .GDKD import GDKD
 from .WSLD import WSLD
 from .DKD_WSLD import DKD_WSLD
+from .DKD_new import DKD_new
 
 
 distiller_dict = {
@@ -41,4 +42,5 @@ distiller_dict = {
     "GDKD": GDKD,
     "WSLD": WSLD,
     "DKD_WSLD": DKD_WSLD,
+    "DKD_new": DKD_new,
 }

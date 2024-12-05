@@ -32,14 +32,14 @@ def main(cfg, resume, opts):
         tags += addtional_tags
         experiment_name += "_".join(addtional_tags)
     experiment_name = os.path.join(experiment_project, experiment_name)
-    if cfg.LOG.WANDB:
-        try:
-            import wandb
+    # if cfg.LOG.WANDB:
+    #     try:
+    #         import wandb
 
-            wandb.init(project=experiment_project, name=experiment_name, tags=tags)
-        except:
-            print(log_msg("Failed to use WANDB", "INFO"))
-            cfg.LOG.WANDB = False
+    #         wandb.init(project=experiment_project, name=experiment_name, tags=tags)
+    #     except:
+    #         print(log_msg("Failed to use WANDB", "INFO"))
+    #         cfg.LOG.WANDB = False
 
     # cfg & loggers
     show_cfg(cfg)
@@ -99,7 +99,7 @@ def main(cfg, resume, opts):
 
     # train
     trainer = trainer_dict[cfg.SOLVER.TRAINER](
-        experiment_name, distiller, train_loader, val_loader, num_classes, cfg
+        experiment_project, experiment_name, tags, distiller, train_loader, val_loader, num_classes, cfg
     )
     trainer.train(resume=resume)
 

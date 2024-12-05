@@ -21,7 +21,7 @@ from .dot import DistillationOrientedTrainer
 import wandb
 
 class BaseTrainer(object):
-    def __init__(self, experiment_name, distiller, train_loader, val_loader, num_classes, cfg):
+    def __init__(self, experiment_project, experiment_name, tags, distiller, train_loader, val_loader, num_classes, cfg):
         self.cfg = cfg
         self.distiller = distiller
         self.train_loader = train_loader
@@ -29,6 +29,11 @@ class BaseTrainer(object):
         self.num_classes = num_classes
         self.optimizer = self.init_optimizer(cfg)
         self.best_acc = -1
+        self.run_ok = False
+
+        self.experiment_project = experiment_project
+        self.experiment_name = experiment_name
+        self.tags = tags
 
         username = getpass.getuser()
         # init loggers
@@ -56,8 +61,18 @@ class BaseTrainer(object):
         self.tf_writer.flush()
         # wandb log
         
+        if not self.run_ok:
+            self.run_ok = True
+            if self.cfg.LOG.WANDB:
+                try:
+                    import wandb
+
+                    wandb.init(project=self.experiment_project, name=self.experiment_name, tags=self.tags)
+                except:
+                    print(log_msg("Failed to use WANDB", "INFO"))
+                    self.cfg.LOG.WANDB = False
+        
         if self.cfg.LOG.WANDB:
-            # wandb.log({"current lr": lr})
             wandb.log(log_dict, step=epoch)
             
         if log_dict["test_acc_top1"] > self.best_acc:
