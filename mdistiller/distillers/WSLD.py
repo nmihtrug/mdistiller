@@ -32,6 +32,28 @@ def wsld_loss(logits_student, logits_teacher, target, temperature, num_classes):
     loss_wsld = (temperature ** 2) * torch.mean(softmax_loss)
     return loss_wsld
 
+# def wsld_loss2(logits_student, logits_teacher, target, temperature, num_classes):
+#     s_input_for_softmax = logits_student / temperature
+#     t_input_for_softmax = logits_teacher / temperature
+
+#     t_soft_label = F.softmax(t_input_for_softmax, dim=1)
+    
+#     softmax_loss = F.cross_entropy(s_input_for_softmax, t_soft_label, reduction='none')
+
+#     # Compute cross-entropy losses for student and teacher
+#     ce_loss_student = F.cross_entropy(logits_student, target, reduction='none')
+#     ce_loss_teacher = F.cross_entropy(logits_teacher, target, reduction='none')
+    
+#     # Compute focal weight
+#     focal_weight = torch.max(ce_loss_student / (ce_loss_teacher + 1e-7), torch.zeros_like(ce_loss_student))
+#     focal_weight = 1 - torch.exp(-focal_weight)
+    
+#     # Combine losses with focal weight
+#     softmax_loss *= focal_weight
+#     loss_wsld = (temperature ** 2) * softmax_loss.mean()
+    
+#     return loss_wsld
+
 
 class WSLD(Distiller):
     """Rethinking Soft Labels for Knowledge Distillation: A Bias-Variance Tradeoff Perspective"""

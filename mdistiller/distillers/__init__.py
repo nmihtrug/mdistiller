@@ -19,7 +19,7 @@ from .GDKD import GDKD
 from .WSLD import WSLD
 from .DKD_WSLD import DKD_WSLD
 from .DKD_new import DKD_new
-
+from .DKD_scaler import DKD_scaler
 
 distiller_dict = {
     "NONE": Vanilla,
@@ -43,4 +43,5 @@ distiller_dict = {
     "WSLD": WSLD,
     "DKD_WSLD": DKD_WSLD,
     "DKD_new": DKD_new,
+    "DKD_scaler": DKD_scaler,
 }
