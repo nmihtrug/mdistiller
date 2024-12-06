@@ -33,9 +33,9 @@ def dkd_loss_with_scaler(logits_student, logits_teacher, target, alpha, beta, te
         / target.shape[0]
     )
     
-    tckd_loss *= pred_loss_scaler
+    tckd_loss *= (1 - pred_loss_scaler)
     
-    nckd_loss *= (1 - pred_loss_scaler)
+    nckd_loss *= pred_loss_scaler
     
     dkd_loss = alpha * tckd_loss + beta * nckd_loss
     
