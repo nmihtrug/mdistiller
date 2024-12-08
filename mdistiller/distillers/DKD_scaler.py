@@ -67,9 +67,9 @@ class DKD_scaler(Distiller):
     def __init__(self, student, teacher, cfg):
         super(DKD_scaler, self).__init__(student, teacher)
         self.ce_loss_weight = cfg.DKD.CE_WEIGHT
-        self.alpha = cfg.DKD.ALPHA
-        self.beta = cfg.DKD.BETA
-        self.temperature = cfg.DKD.T
+        self.alpha = cfg.DKD_scaler.ALPHA
+        self.beta = cfg.DKD_scaler.BETA
+        self.temperature = cfg.DKD_scaler.T
         self.warmup = cfg.DKD.WARMUP
 
     def forward_train(self, image, target, **kwargs):
