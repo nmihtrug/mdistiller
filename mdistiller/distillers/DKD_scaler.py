@@ -11,7 +11,7 @@ def dkd_loss_with_scaler(logits_student, logits_teacher, target, alpha, beta, te
     pred_student = F.softmax(logits_student / temperature, dim=1)
     pred_teacher = F.softmax(logits_teacher / temperature, dim=1)
     
-    pred_loss_scaler = nn.Tanh()(F.cross_entropy(pred_student, pred_teacher))
+    pred_loss_scaler = (F.cross_entropy(pred_student, pred_teacher)) # oo~0
     
     pred_student = cat_mask(pred_student, gt_mask, other_mask)
     pred_teacher = cat_mask(pred_teacher, gt_mask, other_mask)
@@ -33,9 +33,9 @@ def dkd_loss_with_scaler(logits_student, logits_teacher, target, alpha, beta, te
         / target.shape[0]
     )
     
-    tckd_loss *= (1 - pred_loss_scaler)
+    # tckd_loss *= pred_loss_scaler
     
-    # nckd_loss *= pred_loss_scaler
+    nckd_loss *= pred_loss_scaler
     
     dkd_loss = alpha * tckd_loss + beta * nckd_loss
     
