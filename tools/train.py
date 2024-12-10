@@ -16,14 +16,12 @@ from mdistiller.engine import trainer_dict
 
 
 def main(cfg, resume, opts):
-    experiment_project = cfg.EXPERIMENT.PROJECT + "_" + cfg.DISTILLER.TYPE
+    experiment_project = cfg.EXPERIMENT.PROJECT + "_" + cfg.DISTILLER.TEACHER + "_" + cfg.DISTILLER.STUDENT
     
-    experiment_name = cfg.EXPERIMENT.NAME
-    if experiment_name == "":
-        if cfg.DISTILLER.TYPE == "NONE":
-            experiment_name = "vanilla_" + cfg.DISTILLER.STUDENT
-        else:
-            experiment_name = cfg.DISTILLER.TEACHER + "_" + cfg.DISTILLER.STUDENT
+    experiment_name = cfg.DISTILLER.TYPE
+    
+    if experiment_name == "NONE":
+        experiment_name = "vanilla"
     
     tags = cfg.EXPERIMENT.TAG.split(",")
     if opts:
@@ -32,14 +30,6 @@ def main(cfg, resume, opts):
         tags += addtional_tags
         experiment_name += "_".join(addtional_tags)
     experiment_name = os.path.join(experiment_project, experiment_name)
-    # if cfg.LOG.WANDB:
-    #     try:
-    #         import wandb
-
-    #         wandb.init(project=experiment_project, name=experiment_name, tags=tags)
-    #     except:
-    #         print(log_msg("Failed to use WANDB", "INFO"))
-    #         cfg.LOG.WANDB = False
 
     # cfg & loggers
     show_cfg(cfg)
