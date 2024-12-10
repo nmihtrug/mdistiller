@@ -201,5 +201,5 @@ CFG.WSLD.TEMPERATURE = 4
 # DKD_scaler CFG
 CFG.DKD_scaler = CN()
 CFG.DKD_scaler.ALPHA = 1.0
-CFG.DKD_scaler.BETA = 1.0
+CFG.DKD_scaler.BETA = 8.0
 CFG.DKD_scaler.T = 4.0

@@ -5,13 +5,25 @@ import torch.nn.functional as F
 from ._base import Distiller
 
 
+def sample_wise_scaler(pred_student, pred_teacher, target):
+    # Compute cross-entropy losses for student and teacher
+    ce_loss_teacher = F.cross_entropy(pred_student, pred_teacher, reduction='none')
+    ce_loss_target = F.cross_entropy(pred_student, target, reduction='none')
+    
+    # Compute focal weight
+    focal_weight = torch.max(ce_loss_teacher / (ce_loss_target + 1e-7), torch.zeros_like(ce_loss_teacher))
+    focal_weight = 1 - torch.exp(-focal_weight)
+    
+    return torch.mean(focal_weight)
+
+
 def dkd_loss_with_scaler(logits_student, logits_teacher, target, alpha, beta, temperature):
     gt_mask = _get_gt_mask(logits_student, target)
     other_mask = _get_other_mask(logits_student, target)
-    pred_student = F.softmax(logits_student / temperature, dim=1)
-    pred_teacher = F.softmax(logits_teacher / temperature, dim=1)
+    pred_student = F.softmax(logits_student, dim=1)
+    pred_teacher = F.softmax(logits_teacher, dim=1)
     
-    pred_loss_scaler = nn.Tanh()(F.cross_entropy(pred_student, pred_teacher)) # oo~0
+    pred_loss_scaler = sample_wise_scaler(pred_student, pred_teacher, target)
     
     pred_student = cat_mask(pred_student, gt_mask, other_mask)
     pred_teacher = cat_mask(pred_teacher, gt_mask, other_mask)
