@@ -26,7 +26,7 @@ def main(cfg, resume, opts):
     tags = cfg.EXPERIMENT.TAG.split(",")
     if opts:
         experiment_name += "_"
-        addtional_tags = ["{}:{}".format(k, v) for k, v in zip(opts[::2], opts[1::2]) if not k.startswith("DISTILLER")]
+        addtional_tags = ["{}:{}".format(k.split(".")[-1], v) for k, v in zip(opts[::2], opts[1::2]) if not k.startswith("DISTILLER")]
         tags += addtional_tags
         experiment_name += "_".join(addtional_tags)
     experiment_name = os.path.join(experiment_project, experiment_name)
