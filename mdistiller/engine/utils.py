@@ -45,18 +45,6 @@ def validate(val_loader, distiller):
             
             output = distiller(image=image)
             
-            
-            # target_logits = output[torch.arange(output.size(0)), target]
-
-            # Mask to exclude target logits
-            # mask = torch.ones_like(output, dtype=bool)
-            # mask[torch.arange(output.size(0)), target] = False
-
-            # # Get the maximum of non-target logits
-            # non_target_max_logits = output.masked_fill(~mask, float('-inf')).max(dim=1).values
-
-            # b_list.extend(target_logits.detach().cpu().numpy() - non_target_max_logits.detach().cpu().numpy())
-
             loss = criterion(output, target)
             acc1, acc5 = accuracy(output, target, topk=(1, 5))
             batch_size = image.size(0)
