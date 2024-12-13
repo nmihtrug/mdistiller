@@ -51,7 +51,7 @@ def dkd_loss_with_scaler(logits_student, logits_teacher, target, alpha, beta, te
     
     dkd_loss = alpha * tckd_loss + beta * nckd_loss
     
-    return alpha * tckd_loss, beta * nckd_loss, dkd_loss
+    return alpha * tckd_loss, beta * nckd_loss, dkd_loss, pred_loss_scaler
 
 
 def _get_gt_mask(logits, target):
@@ -91,7 +91,7 @@ class DKD_scaler(Distiller):
 
         # losses
         loss_ce = self.ce_loss_weight * F.cross_entropy(logits_student, target)
-        self.loss_tckd, self.loss_nckd, loss_dkd = dkd_loss_with_scaler(
+        self.loss_tckd, self.loss_nckd, loss_dkd, self.pred_loss_scaler = dkd_loss_with_scaler(
             logits_student,
             logits_teacher,
             target,
@@ -112,4 +112,5 @@ class DKD_scaler(Distiller):
         return {
             "loss_tckd": self.loss_tckd,
             "loss_nckd": self.loss_nckd,
+            "pred_loss_scaler": self.pred_loss_scaler,
         }
