@@ -1,9 +1,9 @@
 EXPERIMENT:
   NAME: ""
-  TAG: "kd,res32x4,res8x4"
+  TAG: "kd_scaler,res32x4,res8x4"
   PROJECT: "cifar100_baselines"
 DISTILLER:
-  TYPE: "KD"
+  TYPE: "KD_scaler"
   TEACHER: "resnet32x4"
   STUDENT: "resnet8x4"
 SOLVER:
@@ -15,4 +15,4 @@ SOLVER:
   WEIGHT_DECAY: 0.0005
   MOMENTUM: 0.9
   TYPE: "SGD"
-
+  TRAINER: "base" 

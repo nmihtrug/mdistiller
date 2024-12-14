@@ -20,6 +20,7 @@ from .WSLD import WSLD
 from .DKD_WSLD import DKD_WSLD
 from .DKD_new import DKD_new
 from .DKD_scaler import DKD_scaler
+from .KD_scaler import KD_scaler
 
 distiller_dict = {
     "NONE": Vanilla,
@@ -44,4 +45,5 @@ distiller_dict = {
     "DKD_WSLD": DKD_WSLD,
     "DKD_new": DKD_new,
     "DKD_scaler": DKD_scaler,
+    "KD_scaler": KD_scaler,
 }
