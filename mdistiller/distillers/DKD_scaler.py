@@ -12,7 +12,7 @@ def sample_wise_scaler(logits_student, logits_teacher, target):
     ce_loss_teacher = F.cross_entropy(logits_student, pred_teacher, reduction='none')
     
     # ce loss between student and target
-    ce_loss_target = F.cross_entropy(logits_teacher, target, reduction='none')
+    ce_loss_target = F.cross_entropy(logits_student, target, reduction='none')
     
     # Compute focal weight
     focal_weight = torch.max(ce_loss_teacher / (ce_loss_target + 1e-7), torch.zeros_like(ce_loss_teacher))
