@@ -5,10 +5,14 @@ import torch.nn.functional as F
 from ._base import Distiller
 
 
-def sample_wise_scaler(pred_student, pred_teacher, target):
-    # Compute cross-entropy losses for student and teacher
-    ce_loss_teacher = F.cross_entropy(pred_student, pred_teacher, reduction='none')
-    ce_loss_target = F.cross_entropy(pred_student, target, reduction='none')
+def sample_wise_scaler(logits_student, logits_teacher, target):
+    pred_teacher = F.softmax(logits_teacher, dim=1)
+    
+    # ce loss between student and teacher
+    ce_loss_teacher = F.cross_entropy(logits_student, pred_teacher, reduction='none')
+    
+    # ce loss between student and target
+    ce_loss_target = F.cross_entropy(logits_student, target, reduction='none')
     
     # Compute focal weight
     focal_weight = torch.max(ce_loss_teacher / (ce_loss_target + 1e-7), torch.zeros_like(ce_loss_teacher))
