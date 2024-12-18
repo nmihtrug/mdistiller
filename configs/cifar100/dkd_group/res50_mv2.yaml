@@ -16,5 +16,3 @@ SOLVER:
   MOMENTUM: 0.9
   TYPE: "SGD"
   TRAINER: "logger" 
-
-nohup python3 tools/train.py --cfg configs/cifar100/dkd_group/res32x4_res8x4.yaml > dkd_group_res32x4_res8x4.log & 
