@@ -5,6 +5,13 @@ import torch.nn.functional as F
 from ._base import Distiller
 
 def dkd_group_loss(logits_student, logits_teacher, target, alpha, beta, temperature):
+    N, c = logits_student.shape
+    
+    if len(target.size()) > 1:
+        label = torch.max(target, dim=1, keepdim=True)[1]
+    else:
+        label = target.view(len(target), 1)
+    
     gt_mask = _get_gt_mask(logits_student, target)
     other_mask = _get_other_mask(logits_student, target)
     pred_student = F.softmax(logits_student / temperature, dim=1)
@@ -26,25 +33,32 @@ def dkd_group_loss(logits_student, logits_teacher, target, alpha, beta, temperat
     
     group1 = tckd_loss + bce_loss
     
-    pred_teacher_part2 = F.softmax(
-        logits_teacher / temperature - 1000.0 * gt_mask, dim=1
+    mask = torch.ones_like(logits_student).scatter_(1, label, 0).bool()
+    logits_teacher_nag = logits_teacher[mask].reshape(N, -1)
+    logits_student_nag = logits_student[mask].reshape(N, -1)
+    
+    pred_teacher_nag = F.softmax(
+        logits_teacher_nag / temperature, dim=1
     )
-    log_pred_student_part2 = F.log_softmax(
-        logits_student / temperature - 1000.0 * gt_mask, dim=1
+    log_pred_student_nag = F.log_softmax(
+        logits_student_nag / temperature, dim=1
     )
+    
     nckd_loss = (
-        F.kl_div(log_pred_student_part2, pred_teacher_part2, size_average=False)
+        F.kl_div(log_pred_student_nag, pred_teacher_nag, size_average=False)
         * (temperature**2)
         / target.shape[0]
     )
     
-    negative_labels_onehot = torch.zeros_like(log_pred_student_part2)
-    ce_negative = -(negative_labels_onehot * log_pred_student_part2).sum(dim=1).mean()
-    group2 = nckd_loss + ce_negative
+    negative_labels_onehot = torch.zeros_like(log_pred_student_nag)
+    
+    ce_negative_loss = -(negative_labels_onehot * log_pred_student_nag).sum(dim=1).mean()
+    
+    group2 = nckd_loss + ce_negative_loss
     
     dkd_group_loss = alpha * group1 + beta * group2
     
-    return group1, group2, dkd_group_loss
+    return alpha * group1, beta * group2, dkd_group_loss
 
 
 def _get_gt_mask(logits, target):
