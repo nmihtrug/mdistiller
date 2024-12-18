@@ -1,0 +1,20 @@
+EXPERIMENT:
+  NAME: ""
+  TAG: "dkd_group,res50,mv2"
+  PROJECT: "cifar100_baselines"
+DISTILLER:
+  TYPE: "DKD_group"
+  TEACHER: "ResNet50"
+  STUDENT: "MobileNetV2"
+SOLVER:
+  BATCH_SIZE: 64
+  EPOCHS: 180
+  LR: 0.01
+  LR_DECAY_STAGES: [90, 120, 150]
+  LR_DECAY_RATE: 0.1
+  WEIGHT_DECAY: 0.0005
+  MOMENTUM: 0.9
+  TYPE: "SGD"
+  TRAINER: "logger" 
+
+nohup python3 tools/train.py --cfg configs/cifar100/dkd_group/res32x4_res8x4.yaml > dkd_group_res32x4_res8x4.log & 

@@ -217,7 +217,7 @@ class LoggerTrainer(BaseTrainer):
             "top5": AverageMeter(),
             "loss_tckd": AverageMeter(),
             "loss_nckd": AverageMeter(),
-            "pred_loss_scaler": AverageMeter(),
+            # "pred_loss_scaler": AverageMeter(),
         }
         
         num_iter = len(self.train_loader)
@@ -244,7 +244,7 @@ class LoggerTrainer(BaseTrainer):
                 "test_loss": test_loss,
                 "test_acc_top1": test_acc_top1,
                 "test_acc_top5": test_acc_top5,
-                "pred_loss_scaler": train_meters["pred_loss_scaler"].avg,
+                # "pred_loss_scaler": train_meters["pred_loss_scaler"].avg,
                 "loss_tckd": train_meters["loss_tckd"].avg,
                 "loss_nckd": train_meters["loss_nckd"].avg,
             }
@@ -295,11 +295,11 @@ class LoggerTrainer(BaseTrainer):
         losses_info_dict = self.distiller.module.get_losses_info()
         loss_tckd = losses_info_dict["loss_tckd"]
         loss_nckd = losses_info_dict["loss_nckd"]
-        pred_loss_scaler = losses_info_dict["pred_loss_scaler"]
+        # pred_loss_scaler = losses_info_dict["pred_loss_scaler"]
         
         train_meters["loss_tckd"].update(loss_tckd.cpu().detach().numpy().mean(), batch_size)
         train_meters["loss_nckd"].update(loss_nckd.cpu().detach().numpy().mean(), batch_size)
-        train_meters["pred_loss_scaler"].update(pred_loss_scaler.cpu().detach().numpy().mean(), batch_size)
+        # train_meters["pred_loss_scaler"].update(pred_loss_scaler.cpu().detach().numpy().mean(), batch_size)
         
 
         # backward
