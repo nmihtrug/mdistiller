@@ -39,6 +39,9 @@ def main(cfg, resume, opts):
     else:
         train_loader, val_loader, num_data, num_classes = get_dataset(cfg)
 
+    aux_classifier = cfg.DISTILLER.get("AUX_CLASSIFIER", False)
+    aux_classifier_linear = cfg.DISTILLER.get("AUX_CLASSIFIER_LINEAR", True)
+
     # vanilla
     if cfg.DISTILLER.TYPE == "NONE":
         if cfg.DATASET.TYPE == "imagenet":
@@ -65,7 +68,9 @@ def main(cfg, resume, opts):
             model_teacher = net(num_classes=num_classes)
             model_teacher.load_state_dict(load_checkpoint(pretrain_model_path)["model"])
             model_student = model_dict[cfg.DISTILLER.STUDENT][0](
-                num_classes=num_classes
+                num_classes=num_classes,
+                dual_head=aux_classifier, 
+                aux_head_linear=aux_classifier_linear
             )
         if cfg.DISTILLER.TYPE == "CRD":
             distiller = distiller_dict[cfg.DISTILLER.TYPE](

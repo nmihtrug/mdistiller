@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import math
+from .classifier import NonLinearClassifier
 
 __all__ = ["mobilenetv2_T_w", "mobile_half"]
 
@@ -66,8 +67,13 @@ class InvertedResidual(nn.Module):
 
 class MobileNetV2(nn.Module):
     """mobilenetV2"""
-
-    def __init__(self, T, feature_dim, input_size=32, width_mult=1.0, remove_avg=False):
+    def __init__(self, T,
+                 feature_dim,
+                 input_size=32,
+                 width_mult=1.0,
+                 remove_avg=False,
+                 dual_head=False,
+                 aux_head_linear=True):
         super(MobileNetV2, self).__init__()
         self.remove_avg = remove_avg
 
@@ -109,6 +115,10 @@ class MobileNetV2(nn.Module):
             # nn.Dropout(0.5),
             nn.Linear(self.last_channel, feature_dim),
         )
+        self.dual_head = dual_head
+        if self.dual_head:
+            Classifier_2 = nn.Linear if aux_head_linear else NonLinearClassifier
+            self.classifier2 = Classifier_2(self.last_channel, feature_dim)
 
         H = input_size // (32 // 2)
         self.avgpool = nn.AvgPool2d(H, ceil_mode=True)
@@ -154,7 +164,13 @@ class MobileNetV2(nn.Module):
             out = self.avgpool(out)
         out = out.reshape(out.size(0), -1)
         avg = out
-        out = self.classifier(out)
+
+        out1 = self.classifier(avg)
+        if self.dual_head:
+            out2 = self.classifier2(avg)
+            out = [out1, out2]
+        else:
+            out = out1
 
         feats = {}
         feats["feats"] = [f0, f1, f2, f3, f4]
@@ -178,14 +194,14 @@ class MobileNetV2(nn.Module):
                 m.bias.data.zero_()
 
 
-def mobilenetv2_T_w(T, W, feature_dim=100):
-    model = MobileNetV2(T=T, feature_dim=feature_dim, width_mult=W)
-    return model
+
+def mobilenetv2_T_w(T, W, feature_dim=100, dual_head=False, aux_head_linear=True, input_size=32):
+    return MobileNetV2(T=T, feature_dim=feature_dim, input_size=input_size, 
+                       width_mult=W, dual_head=dual_head, aux_head_linear=aux_head_linear)
 
 
-def mobile_half(num_classes):
-    return mobilenetv2_T_w(6, 0.5, num_classes)
-
+def mobile_half(num_classes, dual_head=False, aux_head_linear=True, input_size=32):
+    return mobilenetv2_T_w(6, 0.5, num_classes, dual_head=dual_head, aux_head_linear=aux_head_linear, input_size=input_size)
 
 if __name__ == "__main__":
     x = torch.randn(2, 3, 32, 32)

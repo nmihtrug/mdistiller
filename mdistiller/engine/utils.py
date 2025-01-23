@@ -1,6 +1,7 @@
 import os
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import numpy as np
 import sys
 import time
@@ -44,6 +45,8 @@ def validate(val_loader, distiller):
             
             
             output = distiller(image=image)
+            if output.__class__ == list:
+                output = output[0]
             
             loss = criterion(output, target)
             acc1, acc5 = accuracy(output, target, topk=(1, 5))
@@ -67,7 +70,7 @@ def validate(val_loader, distiller):
 
 
 def experiment(data_loader, model_s, model_t):
-    batch_time, losses, top1, top5 = [AverageMeter() for _ in range(4)]
+    batch_time, ce_loss_teacheres, losses, top1, top5 = [AverageMeter() for _ in range(5)]
     criterion = nn.CrossEntropyLoss()
     num_iter = len(data_loader)
     pbar = tqdm(range(num_iter))
@@ -99,6 +102,12 @@ def experiment(data_loader, model_s, model_t):
 
             # b_list.extend(target_logits.detach().cpu().numpy() - non_target_max_logits.detach().cpu().numpy())
 
+            pred_t = F.softmax(output_t, dim=1)
+
+            ce_loss_teacher = F.cross_entropy(output_s, pred_t, reduction='none')
+
+            ce_loss_teacheres.update(ce_loss_teacher.cpu().detach().numpy().mean(), image.size(0))
+
             loss = criterion(output_s, target)
             acc1, acc5 = accuracy(output_s, target, topk=(1, 5))
             batch_size = image.size(0)
@@ -112,11 +121,13 @@ def experiment(data_loader, model_s, model_t):
             msg = "Top-1:{top1.avg:.3f}| Top-5:{top5.avg:.3f}".format(
                 top1=top1, top5=top5
             )
-            pbar.set_description(log_msg(msg, "EXPERIMENT"))
+            pbar.set_description(log_msg(msg, "EVAL"))
             pbar.update()
     pbar.close()
     
     # print("B: ", np.mean(b_list), np.max(b_list), np.min(b_list), len(b_list))
+    print("CE Loss Teacher: ", ce_loss_teacheres.avg)
+    print("CE Loss Target: ", losses.avg)
     return top1.avg, top5.avg, losses.avg
 
 def log_msg(msg, mode="INFO"):

@@ -2,6 +2,8 @@ from __future__ import absolute_import
 import torch.nn as nn
 import torch.nn.functional as F
 
+from .classifier import NonLinearClassifier
+
 
 __all__ = ["resnet"]
 
@@ -94,7 +96,7 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, depth, num_filters, block_name="BasicBlock", num_classes=10):
+    def __init__(self, depth, num_filters, block_name='BasicBlock', num_classes=10, dual_head=False, aux_head_linear=True):
         super(ResNet, self).__init__()
         # Model type specifies number of layers for CIFAR-10 model
         if block_name.lower() == "basicblock":
@@ -122,6 +124,11 @@ class ResNet(nn.Module):
         self.avgpool = nn.AvgPool2d(8)
         self.fc = nn.Linear(num_filters[3] * block.expansion, num_classes)
         self.stage_channels = num_filters
+
+        self.dual_head = dual_head
+        if self.dual_head:
+            Classifier_2 = nn.Linear if aux_head_linear else NonLinearClassifier
+            self.fc2 = Classifier_2(num_filters[3] * block.expansion, num_classes)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -196,7 +203,13 @@ class ResNet(nn.Module):
 
         x = self.avgpool(x)
         avg = x.reshape(x.size(0), -1)
-        out = self.fc(avg)
+        out1 = self.fc(avg)
+
+        if self.dual_head:
+            out2 = self.fc2(avg)
+            out = [out1, out2]
+        else:
+            out = out1
 
         feats = {}
         feats["feats"] = [f0, f1, f2, f3]
@@ -246,7 +259,7 @@ if __name__ == "__main__":
     import torch
 
     x = torch.randn(2, 3, 32, 32)
-    net = resnet8x4(num_classes=20)
+    net = resnet8x4(num_classes=100)
     logit, feats = net(x)
 
     for f in feats["feats"]:

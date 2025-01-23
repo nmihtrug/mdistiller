@@ -24,6 +24,7 @@ from .KD_scaler import KD_scaler
 from .NCKD import NCKD
 from .NCKD_BCE import NCKD_BCE
 from .DKD_group import DKD_group
+from .DHKD import DHKD
 
 distiller_dict = {
     "NONE": Vanilla,
@@ -52,4 +53,5 @@ distiller_dict = {
     "NCKD": NCKD,
     "NCKD_BCE": NCKD_BCE,
     "DKD_group": DKD_group,
+    "DHKD": DHKD,
 }

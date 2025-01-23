@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from .classifier import NonLinearClassifier
 
 class BasicBlock(nn.Module):
     expansion = 1
@@ -87,7 +88,7 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, block, num_blocks, num_classes=10, zero_init_residual=False):
+    def __init__(self, block, num_blocks, num_classes=10, zero_init_residual=False, dual_head=False, aux_head_linear=True):
         super(ResNet, self).__init__()
         self.in_planes = 64
 
@@ -99,6 +100,11 @@ class ResNet(nn.Module):
         self.layer4 = self._make_layer(block, 512, num_blocks[3], stride=2)
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.linear = nn.Linear(512 * block.expansion, num_classes)
+
+        self.dual_head = dual_head
+        if self.dual_head:
+            Classifier_2 = nn.Linear if aux_head_linear else NonLinearClassifier
+            self.linear2 = Classifier_2(512 * block.expansion, num_classes)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -180,8 +186,13 @@ class ResNet(nn.Module):
         f4 = out
         out = self.avgpool(out)
         avg = out.reshape(out.size(0), -1)
-        out = self.linear(avg)
-
+        out1 = self.linear(avg)
+        if self.dual_head:
+            out2 = self.linear2(avg)
+            out = [out1, out2]
+        else:
+            out = out1
+            
         feats = {}
         feats["feats"] = [f0, f1, f2, f3, f4]
         feats["preact_feats"] = [f0, f1_pre, f2_pre, f3_pre, f4_pre]
