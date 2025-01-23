@@ -17,6 +17,7 @@ from .utils import (
     log_msg,
 )
 from .dot import DistillationOrientedTrainer
+from .optimizer import OptimGradAlign
 
 import wandb
 
@@ -50,6 +51,8 @@ class BaseTrainer(object):
                 momentum=cfg.SOLVER.MOMENTUM,
                 weight_decay=cfg.SOLVER.WEIGHT_DECAY,
             )
+            if cfg.SOLVER.GA:
+                optimizer = OptimGradAlign(optimizer)
         else:
             raise NotImplementedError(cfg.SOLVER.TYPE)
         return optimizer
@@ -185,7 +188,12 @@ class BaseTrainer(object):
         
         # backward
         loss = sum([l.mean() for l in losses_dict.values()])
-        loss.backward()
+        
+        if self.cfg.SOLVER.GA:
+            self.optimizer.ga_backward([loss])
+        else:
+            loss.backward()
+            
         self.optimizer.step()
         train_meters["training_time"].update(time.time() - train_start_time)
         # collect info
