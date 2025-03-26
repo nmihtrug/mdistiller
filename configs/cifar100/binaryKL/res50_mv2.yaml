@@ -1,0 +1,20 @@
+EXPERIMENT:
+  NAME: ""
+  TAG: "binaryKL,res50,mv2"
+  PROJECT: "cifar100_baselines"
+DISTILLER:
+  TYPE: "BinaryKL"
+  TEACHER: "ResNet50"
+  STUDENT: "MobileNetV2"
+  AUX_CLASSIFIER: False
+  AUX_CLASSIFIER_LINEAR: False
+SOLVER:
+  BATCH_SIZE: 64
+  EPOCHS: 180
+  LR: 0.01
+  LR_DECAY_STAGES: [90, 120, 150]
+  LR_DECAY_RATE: 0.1
+  WEIGHT_DECAY: 0.0005
+  MOMENTUM: 0.9
+  TYPE: "SGD"
+  GA: False
