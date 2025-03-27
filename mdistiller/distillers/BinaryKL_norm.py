@@ -14,8 +14,10 @@ class BinaryKL_norm_loss(nn.Module):
         self.criterion = KLDivLoss(reduction="none")
 
     def normalize_logits(self, x):
-        norm_vals = torch.norm(x, p=2, dim=1, keepdim=True)  # L2 norm along axis 1
-        normalized_logits = x / (norm_vals + self.eps)  # Normalize while avoiding division by zero
+        mean_vals = x.mean(axis=1, keepdims=True)
+        std_vals = x.std(axis=1, keepdims=True)
+        normalized_logits = (x - mean_vals) / (std_vals + 1e-8)
+        
         return normalized_logits
 
     def forward(self, student, teacher):
