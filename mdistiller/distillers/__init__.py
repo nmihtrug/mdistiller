@@ -26,6 +26,7 @@ from .NCKD_BCE import NCKD_BCE
 from .DKD_group import DKD_group
 from .DHKD import DHKD
 from .BinaryKL import BinaryKL
+from .BinaryKL_norm import BinaryKL_Norm
 from .BinaryKLNorm import BinaryKLNorm
 
 distiller_dict = {
@@ -58,4 +59,5 @@ distiller_dict = {
     "DHKD": DHKD,
     "BinaryKL": BinaryKL,
     "BinaryKLNorm": BinaryKLNorm,
+    "BinaryKL_Norm": BinaryKL_Norm,
 }
