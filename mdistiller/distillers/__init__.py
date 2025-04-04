@@ -28,6 +28,7 @@ from .DHKD import DHKD
 from .BinaryKL import BinaryKL
 from .BinaryKL_norm import BinaryKL_Norm
 from .BinaryKLNorm import BinaryKLNorm
+from .logit_diff import Logit_Diff
 
 distiller_dict = {
     "NONE": Vanilla,
@@ -60,4 +61,5 @@ distiller_dict = {
     "BinaryKL": BinaryKL,
     "BinaryKLNorm": BinaryKLNorm,
     "BinaryKL_Norm": BinaryKL_Norm,
+    "Logit_Diff": Logit_Diff,
 }
